@@ -1,0 +1,68 @@
+name: PR Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Generate review with Gemini
+        env:
+          GEMINI_API_KEY: ${{ secrets.ANTIGRAVITY_API_KEY }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          # Assemble the review prompt (instructions + PR metadata + diff)
+          {
+            printf '%s\n' "You are a professional AI code reviewer. Review the following pull request."
+            printf '\n'
+            printf 'PR Title: %s\n' "$PR_TITLE"
+            printf 'PR Description: %s\n' "${PR_BODY:-None}"
+            printf '\n'
+            printf '%s\n' "Rate the change with a Confidence Score from 0 to 5:"
+            printf '%s\n' "  5 = perfectly safe, clean, ready to merge."
+            printf '%s\n' "  3 = mostly safe but needs validation or more test coverage."
+            printf '%s\n' "  0 = dangerous, broken, or contains security vulnerabilities."
+            printf '%s\n' "Begin the report with '**Confidence Score: X/5**' and a 2-sentence rationale,"
+            printf '%s\n' "then list bugs, security concerns, performance issues, and improvements as markdown."
+            printf '\n'
+            printf '%s\n' "Changes (git diff):"
+            git diff "$BASE_SHA...$HEAD_SHA"
+          } > prompt.txt
+
+          # Safely JSON-encode the whole prompt, call Gemini, extract the text
+          jq -Rs '{contents:[{parts:[{text:.}]}]}' prompt.txt > request.json
+
+          curl -sS -X POST \
+            -H "Content-Type: application/json" \
+            -H "x-goog-api-key: $GEMINI_API_KEY" \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent" \
+            -d @request.json > response.json
+
+          jq -r '.candidates[0].content.parts[0].text // empty' response.json > review_report.md
+
+          if [ ! -s review_report.md ]; then
+            echo "Gemini returned no review text. Raw response:" >&2
+            cat response.json >&2
+            exit 1
+          fi
+
+      - name: Post review comment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr comment "${{ github.event.pull_request.number }}" --body-file review_report.md
