@@ -1,0 +1,833 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Future Of Software Engineering — Adam Blake · Costa Rica Tech Week 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Nunito', 'sans-serif'],
+          mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        },
+        colors: {
+          border: 'hsl(var(--border))', input: 'hsl(var(--input))', ring: 'hsl(var(--ring))',
+          background: 'hsl(var(--background))', foreground: 'hsl(var(--foreground))',
+          primary: { DEFAULT: 'hsl(var(--primary))', foreground: 'hsl(var(--primary-foreground))' },
+          secondary: {
+            DEFAULT: 'hsl(var(--secondary))', foreground: 'hsl(var(--secondary-foreground))',
+            20: '#3D3855', 40: '#574E7C', 60: '#7264A2', 80: '#8C7AC9', 100: '#A78FEF', 120: '#B7A3F5',
+          },
+          tertiary: { 20: '#384555', 40: '#4E687C', 60: '#648BA2', 80: '#7AAEC9', 100: '#8FD1EF', 120: '#A3DBF5' },
+          neutral: {
+            '05': '#2B2B38', 10: '#343441', 20: '#474753', 40: '#6C6C77',
+            60: '#90909A', 80: '#B5B5BE', 100: '#DADAE2', 120: '#E3E3E8',
+          },
+          gray: { black: '#18171C', dark: '#201D2F', light: '#2B2B3B', accent: '#363649', background: '#22222F' },
+          destructive: { DEFAULT: 'hsl(var(--destructive))', foreground: 'hsl(var(--destructive-foreground))' },
+          muted: { DEFAULT: 'hsl(var(--muted))', foreground: 'hsl(var(--muted-foreground))' },
+          accent: { DEFAULT: 'hsl(var(--accent))', foreground: 'hsl(var(--accent-foreground))' },
+          card: { DEFAULT: 'hsl(var(--card))', foreground: 'hsl(var(--card-foreground))' },
+          danger: '#FF8387', success: '#8FEFC0', alert: '#FFE373',
+          cobalt: '#6BD4FF', infoBlue: '#8FAAEF', magenta: '#FF0066', purple: '#A940DD',
+        },
+        backgroundImage: {
+          'telescoped-1': 'linear-gradient(61deg, rgba(255,82,151,1) 0%, rgba(118,133,229,1) 50%, rgba(51,190,255,1) 100%)',
+        },
+        boxShadow: {
+          'shadow-12': '0px 12px 12px rgba(0, 0, 0, 0.12), 0px 12px 12px 12px rgba(0, 0, 0, 0.12)',
+        },
+        keyframes: {
+          'fade-in': { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+          'slide-up': { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+          'pulse-dot': { '0%, 100%': { opacity: '0.4' }, '50%': { opacity: '1' } },
+        },
+        animation: {
+          'fade-in': 'fade-in 0.4s ease-out forwards',
+          'slide-up': 'slide-up 0.3s ease-out forwards',
+          'pulse-dot': 'pulse-dot 1.4s ease-in-out infinite',
+        },
+      },
+    },
+  };
+</script>
+<style>
+  :root {
+    --background: 250 8% 10%; --foreground: 240 16% 90%;
+    --card: 250 22% 15%; --card-foreground: 240 16% 90%;
+    --primary: 258 75% 75%; --primary-foreground: 250 22% 12%;
+    --secondary: 258 65% 65%; --secondary-foreground: 240 16% 95%;
+    --muted: 240 8% 25%; --muted-foreground: 240 8% 70%;
+    --accent: 198 100% 71%; --accent-foreground: 250 22% 12%;
+    --destructive: 358 100% 76%; --destructive-foreground: 250 22% 12%;
+    --border: 240 8% 25%; --input: 240 8% 25%; --ring: 258 75% 75%;
+    --radius: 12px;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+  html, body { height: 100%; margin: 0; }
+  body { background: #18171C; color: #E3E3E8; font-family: 'Nunito', sans-serif; overflow: hidden; }
+  #deck { position: relative; height: 100vh; width: 100vw; }
+  .slide {
+    position: absolute; inset: 0; display: none;
+    padding: 3.5rem 5rem; box-sizing: border-box; overflow: hidden;
+  }
+  .slide.active { display: flex; flex-direction: column; }
+  .progress {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: linear-gradient(61deg, rgba(255,82,151,1) 0%, rgba(118,133,229,1) 50%, rgba(51,190,255,1) 100%);
+    transition: width 0.3s ease; z-index: 50;
+  }
+  .chrome {
+    position: fixed; bottom: 1.25rem; right: 1.5rem;
+    font-size: 0.85rem; color: #90909A;
+    font-variant-numeric: tabular-nums; letter-spacing: 0.04em; z-index: 50;
+  }
+  .brand-bar {
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(61deg, rgba(255,82,151,1) 0%, rgba(118,133,229,1) 50%, rgba(51,190,255,1) 100%);
+    opacity: 0.5;
+  }
+  .slide img.photo { border-radius: 12px; box-shadow: 0px 12px 12px rgba(0,0,0,0.12), 0px 12px 12px 12px rgba(0,0,0,0.12); }
+  .quote-card { background: #201D2F; border: 1px solid #474753; border-radius: 12px; padding: 1.75rem 2rem; }
+</style>
+</head>
+<body class="bg-gray-black text-neutral-120 font-sans">
+  <div class="progress" id="progress" style="width: 0%"></div>
+  <main id="deck">
+
+    <!-- 1. Title -->
+    <section class="slide active items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">Costa Rica Tech Week · May 2026</div>
+        <h1 class="mt-6 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          The Future Of Software Engineering
+        </h1>
+        <div class="mt-12 flex items-center justify-center gap-3 text-neutral-60">
+          <span class="w-2 h-2 rounded-full bg-cobalt animate-pulse-dot"></span>
+          <span class="text-base">Adam Blake · Co-Founder · Telescoped</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. But First, a Personal Story… -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-6 text-center">Chapter one</div>
+        <h2 class="text-6xl font-extrabold text-center mb-12 bg-telescoped-1 bg-clip-text text-transparent">
+          But First, a Personal Story…
+        </h2>
+        <div class="grid grid-cols-2 gap-8 items-center">
+          <img src="assets/tech-week/image29.jpg" alt="Childhood photo" class="photo w-full max-h-[55vh] object-cover" />
+          <img src="assets/tech-week/image4.png" alt="Childhood photo" class="photo w-full max-h-[55vh] object-cover" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. More Legos… -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <h2 class="text-6xl font-extrabold text-center mb-12 text-secondary-100">More Legos…</h2>
+        <div class="grid grid-cols-2 gap-8 items-center">
+          <img src="assets/tech-week/image25.jpg" alt="Legos" class="photo w-full max-h-[55vh] object-cover" />
+          <img src="assets/tech-week/image35.jpg" alt="Legos" class="photo w-full max-h-[55vh] object-cover" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. I Also Liked Fire… -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <h2 class="text-6xl font-extrabold text-center mb-12 text-secondary-100">I Also Liked Fire…</h2>
+        <div class="grid grid-cols-2 gap-8 items-center">
+          <img src="assets/tech-week/image20.jpg" alt="Fire" class="photo w-full max-h-[55vh] object-cover" />
+          <img src="assets/tech-week/image26.jpg" alt="Fire" class="photo w-full max-h-[55vh] object-cover" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Mechanical Engineering degree -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <img src="assets/tech-week/image2.png" alt="Mechanical engineering" class="photo w-full max-h-[70vh] object-cover" />
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">So…</div>
+          <h2 class="text-5xl font-extrabold leading-tight text-neutral-120">
+            I Got a Degree in <span class="text-secondary-100">Mechanical Engineering</span>
+          </h2>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Mechanical drawings by hand -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">The old way</div>
+          <h2 class="text-5xl font-extrabold leading-tight text-neutral-120">
+            Originally I Learned How to Make <span class="text-secondary-100">Mechanical Drawings by Hand</span>
+          </h2>
+        </div>
+        <img src="assets/tech-week/image8.png" alt="Mechanical drawing by hand" class="photo w-full max-h-[70vh] object-cover" />
+      </div>
+    </section>
+
+    <!-- 7. Physics calculations by hand -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <img src="assets/tech-week/image5.png" alt="Physics calculation" class="photo w-full max-h-[70vh] object-cover" />
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">The old way</div>
+          <h2 class="text-5xl font-extrabold leading-tight text-neutral-120">
+            I Learned How to <span class="text-secondary-100">Calculate Physics By Hand</span>, Using a Calculator
+          </h2>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Designing took forever -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">The cost</div>
+          <h2 class="text-5xl font-extrabold leading-tight text-neutral-120">
+            Designing Even a <span class="text-secondary-100">Simple Part</span> Took…
+          </h2>
+          <p class="mt-6 text-7xl font-extrabold text-cobalt">Forever.</p>
+        </div>
+        <img src="assets/tech-week/image6.png" alt="A complex hand-drawn mechanical part" class="photo w-full max-h-[70vh] object-cover" />
+      </div>
+    </section>
+
+    <!-- 9. Then we got 3D CAD / FEA -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3 text-center">Then everything changed</div>
+        <h2 class="text-4xl font-extrabold text-center mb-10 text-neutral-120 leading-tight">
+          We Got <span class="text-secondary-100">3D CAD</span>, <span class="text-secondary-100">Finite Element Analysis</span> &amp; Other Software to Help With Physics
+        </h2>
+        <div class="grid grid-cols-2 gap-8 items-center">
+          <img src="assets/tech-week/image1.png" alt="3D CAD software" class="photo w-full max-h-[55vh] object-cover" />
+          <img src="assets/tech-week/image9.png" alt="Finite element analysis" class="photo w-full max-h-[55vh] object-cover" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. 95% of the job went away -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">And then…</div>
+          <p class="text-9xl font-extrabold text-secondary-100 leading-none">95%</p>
+          <h2 class="mt-6 text-4xl font-extrabold leading-tight text-neutral-120">
+            of the Job of a Mechanical Engineer <span class="text-cobalt">Went Away</span>
+          </h2>
+        </div>
+        <img src="assets/tech-week/image12.png" alt="Modern CAD design" class="photo w-full max-h-[70vh] object-cover" />
+      </div>
+    </section>
+
+    <!-- 11. But we didn't lose jobs -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <img src="assets/tech-week/image11.png" alt="Engineers at work" class="photo w-full max-h-[70vh] object-cover" />
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">Plot twist</div>
+          <h2 class="text-5xl font-extrabold leading-tight text-neutral-120">
+            But We Didn't End Up <span class="text-secondary-100">Losing Jobs…</span>
+          </h2>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. From this (1954 Mercedes) -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">We Went From This</div>
+          <h2 class="text-5xl font-extrabold leading-tight text-neutral-120">
+            Instead We Can Now Design and Build Things We <span class="text-secondary-100">Never Could Have Dreamed Of</span>
+          </h2>
+          <p class="mt-8 text-lg text-neutral-60 italic">1954 Supercar Technology — Mercedes 300SL Gullwing</p>
+        </div>
+        <img src="assets/tech-week/image7.png" alt="Mercedes 300SL Gullwing" class="photo w-full max-h-[70vh] object-cover" />
+      </div>
+    </section>
+
+    <!-- 13. To this (2026 Czinger) -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3 text-center">…To This</div>
+        <h2 class="text-5xl font-extrabold text-center mb-3 bg-telescoped-1 bg-clip-text text-transparent">
+          The Czinger 21C
+        </h2>
+        <p class="text-center text-lg text-neutral-60 italic mb-10">2026 Supercar Technology</p>
+        <div class="grid grid-cols-2 gap-8 items-center">
+          <img src="assets/tech-week/image13.png" alt="Czinger 21C" class="photo w-full max-h-[55vh] object-cover" />
+          <img src="assets/tech-week/image18.png" alt="Czinger 21C" class="photo w-full max-h-[55vh] object-cover" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 14. Same transition with software -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">The parallel</div>
+        <h2 class="text-5xl font-extrabold leading-tight text-neutral-120 mb-12">
+          We Are Now Going Through the Same Transition with Software —
+          <span class="text-secondary-100">95% of the job of a software engineer is going away.</span>
+        </h2>
+        <div class="quote-card">
+          <p class="text-3xl font-light italic leading-snug text-neutral-120">
+            "AI now writes over <span class="text-cobalt font-semibold">90% of the company's code</span>."
+          </p>
+          <p class="mt-4 text-base uppercase tracking-[0.2em] text-cobalt font-semibold">— Krishna Rao · Anthropic CFO</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 15. Doom & gloom -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">The headlines</div>
+        <h2 class="text-4xl font-extrabold mb-8 text-neutral-120">
+          People Are Panicking — We're Seeing <span class="text-danger">Doom &amp; Gloom</span> Headlines
+        </h2>
+        <div class="space-y-4">
+          <div class="quote-card">
+            <p class="text-xl italic text-neutral-120">"There will be no programmers in five years."</p>
+            <p class="mt-2 text-sm uppercase tracking-[0.2em] text-cobalt font-semibold">— Emad Mostaque · former Stability AI CEO</p>
+          </div>
+          <div class="quote-card">
+            <p class="text-xl italic text-neutral-120">"AI will replace mid-level engineers by 2025."</p>
+            <p class="mt-2 text-sm uppercase tracking-[0.2em] text-cobalt font-semibold">— reporting on Mark Zuckerberg · Meta CEO</p>
+          </div>
+          <div class="quote-card">
+            <p class="text-xl italic text-neutral-120">"Maybe we don't need software developers."</p>
+            <p class="mt-2 text-sm uppercase tracking-[0.2em] text-cobalt font-semibold">— Matt Garman · CEO of AWS</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 16. Job postings actually growing -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">But the data says…</div>
+          <h2 class="text-4xl font-extrabold leading-tight text-neutral-120">
+            Job Postings for Software Engineers Are Actually <span class="text-success">Growing</span> — and outpacing the rest of US job postings
+          </h2>
+        </div>
+        <img src="assets/tech-week/image3.png" alt="Demand for Software Engineers chart" class="photo w-full max-h-[70vh] object-contain bg-neutral-120 p-2" />
+      </div>
+    </section>
+
+    <!-- 17. Anthropic 150 open jobs -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <img src="assets/tech-week/image23.png" alt="Anthropic open engineering roles" class="photo w-full max-h-[70vh] object-contain bg-neutral-120 p-2" />
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">Case in point</div>
+          <h2 class="text-5xl font-extrabold leading-tight text-neutral-120">
+            Anthropic Has <span class="text-secondary-100">150 open jobs</span> for Engineers
+          </h2>
+        </div>
+      </div>
+    </section>
+
+    <!-- 18. End of SaaS (luminaries) -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">More predictions</div>
+        <h2 class="text-4xl font-extrabold mb-10 text-neutral-120">
+          Luminaries Are Predicting <span class="text-secondary-100">the End of SaaS</span>
+        </h2>
+        <div class="space-y-5">
+          <div class="quote-card">
+            <p class="text-2xl italic text-neutral-120">"Business applications as we know them will collapse in the agent era."</p>
+            <p class="mt-3 text-sm uppercase tracking-[0.2em] text-cobalt font-semibold">— Satya Nadella · CEO of Microsoft</p>
+          </div>
+          <div class="quote-card">
+            <p class="text-2xl italic text-neutral-120">"Software is going to approach zero marginal value."</p>
+            <p class="mt-3 text-sm uppercase tracking-[0.2em] text-cobalt font-semibold">— Dario Amodei · CEO of Anthropic</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 19. Stock market agrees -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">The market reacts</div>
+          <h2 class="text-5xl font-extrabold leading-tight text-neutral-120">
+            And the <span class="text-secondary-100">Stock Market Agrees…</span>
+          </h2>
+        </div>
+        <img src="assets/tech-week/image16.png" alt="Stock chart" class="photo w-full max-h-[70vh] object-contain bg-neutral-120 p-2" />
+      </div>
+    </section>
+
+    <!-- 20. BVP Cloud Index improving -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <img src="assets/tech-week/image10.png" alt="BVP Cloud Index" class="photo w-full max-h-[70vh] object-contain bg-neutral-120 p-2" />
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">But on the other hand</div>
+          <h2 class="text-5xl font-extrabold leading-tight text-neutral-120">
+            BVP Cloud Index Says Metrics Are <span class="text-success">Improving…</span>
+          </h2>
+        </div>
+      </div>
+    </section>
+
+    <!-- 21. Free open source -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">A reminder</div>
+          <h2 class="text-5xl font-extrabold leading-tight text-neutral-120">
+            There Have Been <span class="text-secondary-100">"Free" Open Source</span> Versions of Just About Every Major Type of Software for a Long Time
+          </h2>
+        </div>
+        <img src="assets/tech-week/image15.png" alt="Open source software" class="photo w-full max-h-[70vh] object-cover" />
+      </div>
+    </section>
+
+    <!-- 22. Vibe code and support? -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <img src="assets/tech-week/image14.png" alt="Maintaining vibe-coded software" class="photo w-full max-h-[70vh] object-cover" />
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">Reality check</div>
+          <h2 class="text-5xl font-extrabold leading-tight text-neutral-120">
+            Would You Want to <span class="text-secondary-100">Vibe Code</span> and <span class="text-cobalt">Support</span> All of That Software?
+          </h2>
+        </div>
+      </div>
+    </section>
+
+    <!-- 23. Narrative not quite right -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">Take a breath</div>
+          <h2 class="text-5xl font-extrabold leading-tight text-neutral-120">
+            Things Definitely Will Change — But Maybe the <span class="text-secondary-100">Narrative Is Not Quite Right</span>
+          </h2>
+        </div>
+        <img src="assets/tech-week/image21.png" alt="A different perspective" class="photo w-full max-h-[70vh] object-cover" />
+      </div>
+    </section>
+
+    <!-- 24. Table stakes (reflection questions) -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Table stakes</div>
+        <h2 class="text-5xl font-extrabold mb-12 text-neutral-120 leading-tight">
+          Embracing Change and Leveling Up Your Use of AI <span class="text-secondary-100">is the floor</span>
+        </h2>
+        <ul class="space-y-8 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4">
+            <span class="text-cobalt font-bold mt-1">▸</span>
+            <span>Are you just using AI to <span class="text-secondary-100 font-semibold">complete code</span>, or are you doing <span class="text-cobalt font-semibold">outcome-driven development</span>?</span>
+          </li>
+          <li class="flex gap-4">
+            <span class="text-cobalt font-bold mt-1">▸</span>
+            <span>Are you just using AI <span class="text-secondary-100 font-semibold">for coding</span>, or are you creating new product experiences by <span class="text-cobalt font-semibold">embedding it in your product</span>?</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 25. Needs will shift -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3 text-center">The shift</div>
+        <h2 class="text-4xl font-extrabold text-center mb-10 text-neutral-120 leading-tight">
+          The Needs Will Shift —
+          <span class="text-secondary-100">Historically Most Software Had to Serve a Large Number of Users</span>
+        </h2>
+        <div class="grid grid-cols-2 gap-8 items-center">
+          <img src="assets/tech-week/image22.png" alt="Large user base software" class="photo w-full max-h-[55vh] object-cover" />
+          <img src="assets/tech-week/image27.png" alt="Large user base software" class="photo w-full max-h-[55vh] object-cover" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 26. Custom software is expensive -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">A smaller category</div>
+        <h2 class="text-4xl font-extrabold mb-12 text-neutral-120 leading-tight">
+          Custom Software Has Been a Smaller Category — Because It's Been <span class="text-secondary-100">Extremely Expensive to Develop</span>
+        </h2>
+        <div class="grid grid-cols-2 gap-6">
+          <div class="quote-card">
+            <p class="text-4xl font-extrabold text-cobalt">$50k – $500k+</p>
+            <p class="mt-2 text-lg text-neutral-80">project budgets</p>
+          </div>
+          <div class="quote-card">
+            <p class="text-4xl font-extrabold text-cobalt">6 – 12+ months</p>
+            <p class="mt-2 text-lg text-neutral-80">to ship</p>
+          </div>
+          <div class="quote-card">
+            <p class="text-4xl font-extrabold text-cobalt">Large teams</p>
+            <p class="mt-2 text-lg text-neutral-80">required to deliver</p>
+          </div>
+          <div class="quote-card">
+            <p class="text-4xl font-extrabold text-cobalt">Ongoing</p>
+            <p class="mt-2 text-lg text-neutral-80">maintenance cost</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 27. Software can proliferate -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">But now…</div>
+        <h2 class="text-6xl font-extrabold leading-tight mb-12 text-neutral-120">
+          Software Can <span class="bg-telescoped-1 bg-clip-text text-transparent">Proliferate</span> Like Never Before
+        </h2>
+        <ul class="space-y-6 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4">
+            <span class="text-cobalt font-bold mt-1">▸</span>
+            <span>Lots of custom software that was <span class="text-secondary-100 font-semibold">too expensive to build</span> can now be built</span>
+          </li>
+          <li class="flex gap-4">
+            <span class="text-cobalt font-bold mt-1">▸</span>
+            <span>Software factories and AI harnesses will <span class="text-secondary-100 font-semibold">collapse timelines</span> and enable more (and better) "off-the-shelf" software</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 28. Every company pushing to adopt AI -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Boardroom pressure</div>
+        <h2 class="text-5xl font-extrabold mb-12 text-neutral-120 leading-tight">
+          Every Company Is Pushing to <span class="text-secondary-100">"Adopt" AI</span>
+        </h2>
+        <div class="grid grid-cols-2 gap-6">
+          <div class="quote-card">
+            <p class="text-7xl font-extrabold text-cobalt leading-none">76%</p>
+            <p class="mt-4 text-lg text-neutral-120">of global 2000 companies have a Chief AI Officer (up from <span class="text-secondary-100 font-semibold">26% in 2025</span>)</p>
+            <p class="mt-3 text-xs uppercase tracking-[0.2em] text-neutral-60 font-semibold">— IBM Study</p>
+          </div>
+          <div class="quote-card">
+            <p class="text-7xl font-extrabold text-cobalt leading-none">72%</p>
+            <p class="mt-4 text-lg text-neutral-120">of US CEOs say boards are pressuring them to deliver <span class="text-secondary-100 font-semibold">measurable AI outcomes</span></p>
+            <p class="mt-3 text-xs uppercase tracking-[0.2em] text-neutral-60 font-semibold">— Dataiku CEO Survey</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 29. Vibe coding failing in prod -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">The hidden problem</div>
+        <h2 class="text-4xl font-extrabold mb-10 text-neutral-120 leading-tight">
+          People Are Starting to Vibe Code Internal Software Tools — But Much of It is
+          <span class="text-danger">Failing to Make It Into Production</span>
+        </h2>
+        <div class="quote-card">
+          <p class="text-2xl text-neutral-120 leading-snug">
+            Research and industry forecasts consistently warn that between
+            <span class="text-7xl font-extrabold text-danger align-middle mx-2">60–90%</span>
+            of AI projects are at risk of failure by 2026.
+          </p>
+          <p class="mt-4 text-sm text-neutral-80 italic">Failure = abandonment before deployment, no measurable business value, or outright cancellation.</p>
+          <p class="mt-3 text-xs uppercase tracking-[0.2em] text-cobalt font-semibold">— TechRadar</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 30. Internal software departments -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">In the future</div>
+          <h2 class="text-5xl font-extrabold leading-tight text-neutral-120">
+            Companies Are Going to Have <span class="text-secondary-100">Internal Software Departments</span>
+          </h2>
+        </div>
+        <img src="assets/tech-week/image37.png" alt="Internal software department" class="photo w-full max-h-[70vh] object-cover" />
+      </div>
+    </section>
+
+    <!-- 31. Early signs -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <img src="assets/tech-week/image33.png" alt="Engineers on internal software" class="photo w-full max-h-[70vh] object-contain bg-neutral-120 p-2" />
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">Already happening</div>
+          <h2 class="text-5xl font-extrabold leading-tight text-neutral-120">
+            You Can Already See <span class="text-secondary-100">Early Signs</span> of Engineers Working on Internal Software
+          </h2>
+        </div>
+      </div>
+    </section>
+
+    <!-- 32. Palantir & FDE -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3 text-center">Palantir's playbook</div>
+        <h2 class="text-4xl font-extrabold text-center mb-10 text-neutral-120 leading-tight">
+          Palantir Is Getting Accolades for Showing the Value of the
+          <span class="text-secondary-100">Forward Deployed Engineer (FDE)</span>
+        </h2>
+        <div class="grid grid-cols-2 gap-8 items-center">
+          <img src="assets/tech-week/image30.png" alt="Palantir FDE" class="photo w-full max-h-[55vh] object-contain bg-neutral-120 p-2" />
+          <img src="assets/tech-week/image34.jpg" alt="Forward Deployed Engineer" class="photo w-full max-h-[55vh] object-cover" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 33. OpenAI $4B initiative -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">$4B initiative</div>
+          <h2 class="text-5xl font-extrabold leading-tight text-neutral-120">
+            OpenAI Announced a <span class="text-secondary-100">$4B Initiative</span> to Embed Engineers in Companies to Deploy AI
+          </h2>
+        </div>
+        <img src="assets/tech-week/image38.png" alt="OpenAI initiative" class="photo w-full max-h-[70vh] object-contain bg-neutral-120 p-2" />
+      </div>
+    </section>
+
+    <!-- 34. Manifesto -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">The takeaway</div>
+        <h1 class="mt-8 text-5xl font-extrabold leading-tight text-neutral-120">
+          The Future of Software Engineering is About an
+          <span class="bg-telescoped-1 bg-clip-text text-transparent">Abundance of Software</span>
+          Like We Have Never Seen — With <span class="text-secondary-100">Software Engineers at the Core</span>.
+        </h1>
+        <p class="mt-10 text-2xl text-neutral-80 font-light">But some of the jobs might look a little different.</p>
+      </div>
+    </section>
+
+    <!-- 35. Mechanical engineer didn't go away -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3 text-center">Back to the parallel</div>
+        <h2 class="text-4xl font-extrabold text-center mb-3 text-neutral-120 leading-tight">
+          The Job of the Mechanical Engineer Didn't Go Away —
+          <span class="text-secondary-100">Neither Will the Job of the Software Engineer</span>
+        </h2>
+        <p class="text-center text-xl text-neutral-80 italic mb-10">Both get to spend more time on the core: creatively solving problems.</p>
+        <div class="grid grid-cols-2 gap-8 items-center">
+          <img src="assets/tech-week/image17.png" alt="Engineer creatively solving problems" class="photo w-full max-h-[50vh] object-cover" />
+          <img src="assets/tech-week/image28.png" alt="Engineer creatively solving problems" class="photo w-full max-h-[50vh] object-cover" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 36. Telescoped at the center -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.3em] text-xs font-semibold mb-4">Telescoped</div>
+          <h2 class="text-5xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+            Telescoped Will Be at the Center of This Revolution
+          </h2>
+        </div>
+        <img src="assets/tech-week/image19.png" alt="Telescoped" class="photo w-full max-h-[70vh] object-contain" />
+      </div>
+    </section>
+
+    <!-- 37. Mission -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">The Telescoped Mission</div>
+        <h1 class="mt-10 text-5xl font-extrabold leading-snug bg-telescoped-1 bg-clip-text text-transparent">
+          "The Pursuit of Opportunity and Purpose for the Talented People of the World."
+        </h1>
+      </div>
+    </section>
+
+    <!-- 38. 6 years of community -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <img src="assets/tech-week/image32.png" alt="Costa Rica tech community" class="photo w-full max-h-[70vh] object-cover" />
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">6 years and counting</div>
+          <h2 class="text-5xl font-extrabold leading-tight text-neutral-120">
+            Laser Focused On Building and Helping the
+            <span class="text-secondary-100">Costa Rican Tech Community</span>
+          </h2>
+        </div>
+      </div>
+    </section>
+
+    <!-- 39. Community stats + thank you -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3 text-center">Community is at the core</div>
+        <h2 class="text-4xl font-extrabold text-center mb-12 text-neutral-120">
+          Of What We Are Building
+        </h2>
+        <div class="grid grid-cols-3 gap-6">
+          <div class="quote-card text-center">
+            <p class="text-base uppercase tracking-[0.2em] text-cobalt font-semibold">Since</p>
+            <p class="mt-3 text-6xl font-extrabold text-neutral-120 leading-none">May<br/>'22</p>
+            <p class="mt-4 text-base text-neutral-80">community events launched</p>
+          </div>
+          <div class="quote-card text-center">
+            <p class="text-base uppercase tracking-[0.2em] text-cobalt font-semibold">Hosted</p>
+            <p class="mt-3 text-7xl font-extrabold bg-telescoped-1 bg-clip-text text-transparent leading-none">47</p>
+            <p class="mt-4 text-base text-neutral-80">events</p>
+          </div>
+          <div class="quote-card text-center">
+            <p class="text-base uppercase tracking-[0.2em] text-cobalt font-semibold">Brought together</p>
+            <p class="mt-3 text-7xl font-extrabold bg-telescoped-1 bg-clip-text text-transparent leading-none">2,300</p>
+            <p class="mt-4 text-base text-neutral-80">attendees</p>
+          </div>
+        </div>
+        <p class="mt-12 text-center text-3xl font-extrabold text-secondary-100 tracking-wide">THANK YOU!</p>
+      </div>
+    </section>
+
+    <!-- 40. Help engineers get amazing jobs -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">Our work</div>
+          <h2 class="text-6xl font-extrabold leading-tight text-neutral-120">
+            We Help Engineers Get <span class="bg-telescoped-1 bg-clip-text text-transparent">Amazing Jobs</span>
+          </h2>
+        </div>
+        <img src="assets/tech-week/image31.png" alt="Engineers getting hired" class="photo w-full max-h-[70vh] object-cover" />
+      </div>
+    </section>
+
+    <!-- 41. Design Partner -->
+    <section class="slide items-center justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto grid grid-cols-2 gap-12 items-center">
+        <img src="assets/tech-week/image36.jpg" alt="Telescoped product" class="photo w-full max-h-[70vh] object-cover" />
+        <div>
+          <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-4">What's next</div>
+          <h2 class="text-4xl font-extrabold leading-tight text-neutral-120 mb-8">
+            We're Building New Ways for Engineers to
+            <span class="text-secondary-100">Represent Themselves Online</span> and
+            <span class="text-secondary-100">Get Jobs</span>
+          </h2>
+          <div class="inline-block px-5 py-3 rounded-lg bg-telescoped-1 text-white font-bold uppercase tracking-[0.2em] text-sm">
+            Become a Design Partner
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 42. Closing -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">In closing</div>
+        <h1 class="mt-8 text-6xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          The Future of Software Engineering is Bright
+        </h1>
+        <p class="mt-10 text-2xl text-neutral-120 font-light max-w-4xl mx-auto">
+          Let's build this community and these opportunities <span class="text-secondary-100 font-semibold">together</span>.
+        </p>
+        <img src="assets/tech-week/image24.png" alt="Closing" class="photo mt-10 mx-auto max-h-[40vh] object-contain" />
+        <div class="mt-10 flex items-center justify-center gap-3 text-neutral-60">
+          <span class="w-2 h-2 rounded-full bg-cobalt animate-pulse-dot"></span>
+          <span class="text-base">Adam Blake · Telescoped</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+  <div class="chrome">
+    <span id="counter">1 / 42</span>
+    <span class="ml-3 text-neutral-40">←/→ · space · f</span>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const counter = document.getElementById('counter');
+      const progress = document.getElementById('progress');
+      let i = 0;
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+        counter.textContent = (i + 1) + ' / ' + slides.length;
+        progress.style.width = ((i + 1) / slides.length * 100) + '%';
+      }
+      function next() { if (i < slides.length - 1) { i++; render(); } }
+      function prev() { if (i > 0) { i--; render(); } }
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      }
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); next(); }
+        else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+        else if (e.key === 'Home') { i = 0; render(); }
+        else if (e.key === 'End') { i = slides.length - 1; render(); }
+        else if (e.key === 'f' || e.key === 'F') { toggleFullscreen(); }
+      });
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('a, button, img')) return;
+        next();
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>

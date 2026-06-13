@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI Engineering — Mariano Alvarez</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Nunito', 'sans-serif'],
+          mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        },
+        colors: {
+          border: 'hsl(var(--border))', input: 'hsl(var(--input))', ring: 'hsl(var(--ring))',
+          background: 'hsl(var(--background))', foreground: 'hsl(var(--foreground))',
+          primary: { DEFAULT: 'hsl(var(--primary))', foreground: 'hsl(var(--primary-foreground))' },
+          secondary: {
+            DEFAULT: 'hsl(var(--secondary))', foreground: 'hsl(var(--secondary-foreground))',
+            20: '#3D3855', 40: '#574E7C', 60: '#7264A2', 80: '#8C7AC9', 100: '#A78FEF', 120: '#B7A3F5',
+          },
+          tertiary: { 20: '#384555', 40: '#4E687C', 60: '#648BA2', 80: '#7AAEC9', 100: '#8FD1EF', 120: '#A3DBF5' },
+          neutral: {
+            '05': '#2B2B38', 10: '#343441', 20: '#474753', 40: '#6C6C77',
+            60: '#90909A', 80: '#B5B5BE', 100: '#DADAE2', 120: '#E3E3E8',
+          },
+          gray: { black: '#18171C', dark: '#201D2F', light: '#2B2B3B', accent: '#363649', background: '#22222F' },
+          destructive: { DEFAULT: 'hsl(var(--destructive))', foreground: 'hsl(var(--destructive-foreground))' },
+          muted: { DEFAULT: 'hsl(var(--muted))', foreground: 'hsl(var(--muted-foreground))' },
+          accent: { DEFAULT: 'hsl(var(--accent))', foreground: 'hsl(var(--accent-foreground))' },
+          card: { DEFAULT: 'hsl(var(--card))', foreground: 'hsl(var(--card-foreground))' },
+          danger: '#FF8387', success: '#8FEFC0', alert: '#FFE373',
+          cobalt: '#6BD4FF', infoBlue: '#8FAAEF', magenta: '#FF0066', purple: '#A940DD',
+        },
+        backgroundImage: {
+          'telescoped-1': 'linear-gradient(61deg, rgba(255,82,151,1) 0%, rgba(118,133,229,1) 50%, rgba(51,190,255,1) 100%)',
+        },
+        boxShadow: {
+          'shadow-12': '0px 12px 12px rgba(0, 0, 0, 0.12), 0px 12px 12px 12px rgba(0, 0, 0, 0.12)',
+        },
+        keyframes: {
+          'fade-in': { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+          'slide-up': { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+          'pulse-dot': { '0%, 100%': { opacity: '0.4' }, '50%': { opacity: '1' } },
+        },
+        animation: {
+          'fade-in': 'fade-in 0.4s ease-out forwards',
+          'slide-up': 'slide-up 0.3s ease-out forwards',
+          'pulse-dot': 'pulse-dot 1.4s ease-in-out infinite',
+        },
+      },
+    },
+  };
+</script>
+<style>
+  :root {
+    --background: 250 8% 10%; --foreground: 240 16% 90%;
+    --card: 250 22% 15%; --card-foreground: 240 16% 90%;
+    --primary: 258 75% 75%; --primary-foreground: 250 22% 12%;
+    --secondary: 258 65% 65%; --secondary-foreground: 240 16% 95%;
+    --muted: 240 8% 25%; --muted-foreground: 240 8% 70%;
+    --accent: 198 100% 71%; --accent-foreground: 250 22% 12%;
+    --destructive: 358 100% 76%; --destructive-foreground: 250 22% 12%;
+    --border: 240 8% 25%; --input: 240 8% 25%; --ring: 258 75% 75%;
+    --radius: 12px;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+  html, body { height: 100%; margin: 0; }
+  body { background: #18171C; color: #E3E3E8; font-family: 'Nunito', sans-serif; overflow: hidden; }
+  #deck { position: relative; height: 100vh; width: 100vw; }
+  .slide {
+    position: absolute; inset: 0; display: none;
+    padding: 4rem 6rem; box-sizing: border-box; overflow: hidden;
+  }
+  .slide.active { display: flex; flex-direction: column; }
+  .slide pre[class*='language-'] {
+    background: #18171C !important;
+    border: 1px solid #474753;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 1rem;
+    line-height: 1.5;
+    box-shadow: 0px 12px 12px rgba(0,0,0,0.12), 0px 12px 12px 12px rgba(0,0,0,0.12);
+  }
+  .slide code[class*='language-'] { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .progress {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: linear-gradient(61deg, rgba(255,82,151,1) 0%, rgba(118,133,229,1) 50%, rgba(51,190,255,1) 100%);
+    transition: width 0.3s ease; z-index: 50;
+  }
+  .chrome {
+    position: fixed; bottom: 1.25rem; right: 1.5rem;
+    font-size: 0.85rem; color: #90909A;
+    font-variant-numeric: tabular-nums; letter-spacing: 0.04em; z-index: 50;
+  }
+  .brand-bar {
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(61deg, rgba(255,82,151,1) 0%, rgba(118,133,229,1) 50%, rgba(51,190,255,1) 100%);
+    opacity: 0.5;
+  }
+  .ascii-diagram pre[class*='language-'] {
+    font-size: 1.05rem;
+    line-height: 1.45;
+    text-align: left;
+    width: fit-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .ascii-diagram pre[class*='language-'] code { color: #DADAE2; }
+</style>
+</head>
+<body class="bg-gray-black text-neutral-120 font-sans">
+  <div class="progress" id="progress" style="width: 0%"></div>
+  <main id="deck">
+
+    <!-- 1. Title -->
+    <section class="slide active items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="stagger max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">A talk on</div>
+        <h1 class="mt-6 text-8xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          AI Engineering
+        </h1>
+        <p class="mt-8 text-2xl text-neutral-80 font-light">From running prompts to running systems</p>
+        <div class="mt-14 flex items-center justify-center gap-3 text-neutral-60">
+          <span class="w-2 h-2 rounded-full bg-cobalt animate-pulse-dot"></span>
+          <span class="text-base">Mariano Alvarez · Telescoped · Google Developer Expert</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. About me -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="stagger max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">About me</div>
+        <h1 class="mt-6 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          Mariano Alvarez
+        </h1>
+        <p class="mt-8 text-2xl text-neutral-120 font-light">Sr. Full Stack Engineer @ Telescoped</p>
+        <p class="mt-2 text-xl text-secondary-100 font-semibold">Google Developer Expert</p>
+        <p class="mt-10 text-lg text-neutral-80 italic max-w-3xl mx-auto">
+          I ship with AI every day — these are the patterns that stuck.
+        </p>
+      </div>
+    </section>
+
+    <!-- 3. Two buckets -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Who this talk is for</div>
+        <h2 class="text-4xl font-extrabold text-neutral-120 mb-10">Two kinds of people in this room</h2>
+        <div class="grid grid-cols-2 gap-8 stagger">
+          <div class="rounded-lg border border-neutral-20 bg-gray-dark p-8 shadow-shadow-12">
+            <div class="text-cobalt font-bold text-lg uppercase tracking-wider mb-4">Not using AI yet</div>
+            <ul class="space-y-3 text-xl text-neutral-120">
+              <li class="flex gap-3"><span class="text-cobalt mt-1">▸</span><span>Leave knowing <span class="text-cobalt font-semibold">why</span> this matters</span></li>
+              <li class="flex gap-3"><span class="text-cobalt mt-1">▸</span><span>Where to start without drowning in tools</span></li>
+            </ul>
+          </div>
+          <div class="rounded-lg border border-neutral-20 bg-gray-dark p-8 shadow-shadow-12">
+            <div class="text-secondary-100 font-bold text-lg uppercase tracking-wider mb-4">Already using AI</div>
+            <ul class="space-y-3 text-xl text-neutral-120">
+              <li class="flex gap-3"><span class="text-secondary-100 mt-1">▸</span><span>Patterns to push it <span class="text-secondary-100 font-semibold">to the max</span></span></li>
+              <li class="flex gap-3"><span class="text-secondary-100 mt-1">▸</span><span>The advanced moves teams are using now</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Section divider — Part 1 -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="stagger max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">Part 1</div>
+        <h1 class="mt-6 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          Start where you are
+        </h1>
+        <p class="mt-8 text-2xl text-neutral-80 font-light">Master your tools, locally</p>
+      </div>
+    </section>
+
+    <!-- 5. Why fluency matters -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Why this matters</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">Fluency compounds</h2>
+        <ul class="stagger space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Chatting with the tool gets you <span class="text-secondary-100 font-semibold">20%</span></span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Knowing it deeply gets you the other <span class="text-secondary-100 font-semibold">80%</span></span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Patterns transfer across Claude Code, Cursor, Antigravity</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>The gap between casual and fluent users widens every week</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 6. init -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Standard #1</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-4">init</h2>
+        <p class="mb-6 text-xl text-neutral-80">Bootstrap your repo. Run once. The agent reads your code and writes a CLAUDE.md tuned to it.</p>
+<pre class="language-bash"><code class="language-bash">$ claude
+&gt; /init
+
+# Analyzes the repo, then writes CLAUDE.md with:
+#   • project structure
+#   • build &amp; test commands
+#   • conventions worth remembering
+#   • known pitfalls</code></pre>
+      </div>
+    </section>
+
+    <!-- 7. AGENTS.md / CLAUDE.md -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Standard #2</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-4">AGENTS.md / CLAUDE.md</h2>
+        <p class="mb-6 text-xl text-neutral-80">The agent's "always-on" context. Lives at the repo root. Edit it like code.</p>
+<pre class="language-markdown"><code class="language-markdown"># Project: Telescoped
+
+## Commands
+- Install: bun install
+- Test:    bun test
+- Build:   bun run build
+
+## Conventions
+- Use Bun, not Node
+- Prefer composition over inheritance
+- No console.log in committed code</code></pre>
+      </div>
+    </section>
+
+    <!-- 8. Skills -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Standard #3</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-4">Skills</h2>
+        <p class="mb-6 text-xl text-neutral-80">Reusable instructions the agent loads on demand. One per task type. Progressive disclosure.</p>
+<pre class="language-yaml"><code class="language-yaml">---
+name: slides
+description: Generate an HTML slide deck for an
+  AI Engineering talk from a user-provided outline.
+---
+
+# Procedure
+1. Read template.html
+2. Compose slides from snippets
+3. Write slides.html</code></pre>
+      </div>
+    </section>
+
+    <!-- 9. Hooks -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Standard #4</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-4">Hooks</h2>
+        <p class="mb-6 text-xl text-neutral-80">Shell commands that run around tool calls. Lint after edits. Notify on completion. Enforce policy.</p>
+<pre class="language-json"><code class="language-json">{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "bun lint" }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- 10. Execution modes -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Standard #5</div>
+        <h2 class="text-4xl font-extrabold text-neutral-120 mb-10">Execution modes</h2>
+        <div class="grid grid-cols-2 gap-8 stagger">
+          <div class="rounded-lg border border-neutral-20 bg-gray-dark p-8 shadow-shadow-12">
+            <div class="text-cobalt font-bold text-lg uppercase tracking-wider mb-4">Plan mode</div>
+            <ul class="space-y-3 text-xl text-neutral-120">
+              <li class="flex gap-3"><span class="text-cobalt mt-1">▸</span><span><span class="font-semibold">Read-only</span> — no edits</span></li>
+              <li class="flex gap-3"><span class="text-cobalt mt-1">▸</span><span>Forces alignment before code</span></li>
+              <li class="flex gap-3"><span class="text-cobalt mt-1">▸</span><span>Use for big or ambiguous changes</span></li>
+            </ul>
+          </div>
+          <div class="rounded-lg border border-neutral-20 bg-gray-dark p-8 shadow-shadow-12">
+            <div class="text-secondary-100 font-bold text-lg uppercase tracking-wider mb-4">Code mode</div>
+            <ul class="space-y-3 text-xl text-neutral-120">
+              <li class="flex gap-3"><span class="text-secondary-100 mt-1">▸</span><span>Free to edit, run, ship</span></li>
+              <li class="flex gap-3"><span class="text-secondary-100 mt-1">▸</span><span>Use once the approach is clear</span></li>
+              <li class="flex gap-3"><span class="text-secondary-100 mt-1">▸</span><span>The default for known territory</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. Permissions -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Standard #6</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">Permissions — the safety dial</h2>
+        <ul class="stagger space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">Ask each time</span> — maximum control, slowest</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">Accept edits</span> — auto-approve file changes, gate everything else</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">Auto / bypass</span> — full speed, with caveats</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>The dial moves with <span class="text-secondary-100 font-semibold">trust</span> and <span class="text-secondary-100 font-semibold">blast radius</span></span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 12. Advanced: subagents -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Advanced patterns</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">Subagents</h2>
+        <ul class="stagger space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">Own context window</span> — clean slate, no pollution from parent</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">Only talk to parent</span> — they can't message each other</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Best for <span class="text-secondary-100 font-semibold">repetitive sub-tasks</span> inside one job</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Keep the main agent focused on the task, not the searches</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 13. Advanced: team agents -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Advanced patterns</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">Team agents</h2>
+        <ul class="stagger space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">Multiple agents</span> sharing the same workspace</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Each has a role — researcher, implementer, reviewer</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Best for <span class="text-secondary-100 font-semibold">multi-stage work</span> where roles matter</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>You set the goal — a lead agent coordinates</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 14. Parallel work with git worktrees -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Parallel work</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">git worktrees — N agents, one repo</h2>
+        <ul class="stagger space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>One clone, many checkouts — each its own folder</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Each worktree gets its <span class="text-secondary-100 font-semibold">own agent</span></span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>No branch-switching, no stashing, no stepping on each other</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">Three agents shipping in parallel is realistic now</span></span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 15. Worktrees in practice -->
+    <section class="slide flex-col justify-center ascii-diagram">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Parallel work</div>
+        <h2 class="text-4xl font-extrabold text-secondary-100 mb-6">Worktrees in practice</h2>
+<pre class="language-bash"><code class="language-bash">$ git worktree add ../feat-auth        feat-auth
+$ git worktree add ../feat-billing     feat-billing
+$ git worktree add ../feat-onboarding  feat-onboarding
+
+
+app/                            ← main worktree
+  ├── ../feat-auth              ← agent #1
+  ├── ../feat-billing           ← agent #2
+  └── ../feat-onboarding        ← agent #3</code></pre>
+      </div>
+    </section>
+
+    <!-- 16. Section divider — Part 2 -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="stagger max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">Part 2</div>
+        <h1 class="mt-6 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          Zoom out
+        </h1>
+        <p class="mt-8 text-2xl text-neutral-80 font-light">Stop watching every keystroke</p>
+      </div>
+    </section>
+
+    <!-- 17. The local-dev tax -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">The problem</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">Local has a ceiling</h2>
+        <ul class="stagger space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Even with auto-accept, you're still <span class="text-secondary-100 font-semibold">babysitting</span></span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Permission fatigue → people start blindly approving</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>One bad command can wreck a working tree</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>The risk is small, but it scales with how much you delegate</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 18. Frame 1: local -->
+    <section class="slide flex-col justify-center items-center ascii-diagram">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl w-full mx-auto text-center">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Zoom out — frame 1</div>
+        <h2 class="text-4xl font-extrabold text-secondary-100 mb-10">Today: you and the AI, on your laptop</h2>
+<pre class="language-text"><code class="language-text">╔══════════════════════╗
+║                      ║
+║     YOU  +  AI       ║
+║                      ║
+║      (laptop)        ║
+║                      ║
+╚══════════════════════╝</code></pre>
+        <p class="mt-8 text-xl text-neutral-80">You watch every action.</p>
+      </div>
+    </section>
+
+    <!-- 19. Frame 2: container wraps local -->
+    <section class="slide flex-col justify-center items-center ascii-diagram">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl w-full mx-auto text-center">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Zoom out — frame 2</div>
+        <h2 class="text-4xl font-extrabold text-secondary-100 mb-10">Wrap it — same box, now in a container</h2>
+<pre class="language-text"><code class="language-text">┌──────────────────────────────────────────────┐
+│                                              │
+│         ╔══════════════════════╗             │
+│         ║                      ║             │
+│         ║     YOU  +  AI       ║             │
+│         ║                      ║             │
+│         ║      (laptop)        ║             │
+│         ║                      ║             │
+│         ╚══════════════════════╝             │
+│                                              │
+│       CONTAINER  (Claude · Cursor)           │
+└──────────────────────────────────────────────┘</code></pre>
+        <p class="mt-8 text-xl text-neutral-80">The AI is free to act — you supervise outcomes.</p>
+      </div>
+    </section>
+
+    <!-- 20. What containerization unlocks -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">What you gain</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">Containers unlock delegation</h2>
+        <ul class="stagger space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">Run wild safely</span> — no rm -rf $HOME worry</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">N tasks in parallel</span> — each in its own sandbox</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">No permission fatigue</span> — supervise outcomes, not commands</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">Bounded blast radius</span> — failures stay inside the box</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 21. Section divider — Part 3 -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="stagger max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">Part 3</div>
+        <h1 class="mt-6 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          There's more than code
+        </h1>
+        <p class="mt-8 text-2xl text-neutral-80 font-light">Zoom out one more time</p>
+      </div>
+    </section>
+
+    <!-- 22. Step 1: Plan & Code (tools BELOW) -->
+    <section class="slide flex-col justify-center items-center ascii-diagram">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto text-center">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">The loop — step 1</div>
+        <h2 class="text-4xl font-extrabold text-secondary-100 mb-10">What everyone thinks of first</h2>
+<pre class="language-text"><code class="language-text">┌────────────────┐
+│                │
+│  PLAN  & CODE  │
+│                │
+└────────────────┘</code></pre>
+        <p class="mt-10 text-xl text-secondary-100 font-semibold">Claude Code · Cursor · Antigravity</p>
+      </div>
+    </section>
+
+    <!-- 23. Step 2: + Design (Design above, Plan&Code below) -->
+    <section class="slide flex-col justify-center items-center ascii-diagram">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto text-center">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">The loop — step 2</div>
+        <h2 class="text-4xl font-extrabold text-secondary-100 mb-6">Design comes first</h2>
+        <p class="text-lg text-cobalt font-semibold mb-6">Google Stitch · Claude Design · Lovable</p>
+<pre class="language-text"><code class="language-text">┌──────────┐        ┌────────────────┐
+│          │        │                │
+│  DESIGN  │ ─────▶ │  PLAN  & CODE  │
+│          │        │                │
+└──────────┘        └────────────────┘</code></pre>
+        <p class="mt-6 text-lg text-secondary-100 font-semibold">Claude Code · Cursor · Antigravity</p>
+      </div>
+    </section>
+
+    <!-- 24. Step 3: + Review (Design above, Plan&Code below, Review above) -->
+    <section class="slide flex-col justify-center items-center ascii-diagram">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto text-center">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">The loop — step 3</div>
+        <h2 class="text-4xl font-extrabold text-secondary-100 mb-6">Review closes the loop</h2>
+        <div class="flex justify-between text-lg font-semibold mb-6 px-8">
+          <span class="text-cobalt">Google Stitch · Claude Design · Lovable</span>
+          <span class="text-cobalt">CodeRabbit · Greptile · Copilot · Jules</span>
+        </div>
+<pre class="language-text"><code class="language-text">┌──────────┐    ┌────────────────┐    ┌──────────┐
+│  DESIGN  │ ─▶ │  PLAN  & CODE  │ ─▶ │  REVIEW  │
+└──────────┘    └────────────────┘    └──────────┘
+                       ▲                    │
+                       └────────────────────┘</code></pre>
+        <p class="mt-6 text-lg text-secondary-100 font-semibold">Claude Code · Cursor · Antigravity</p>
+      </div>
+    </section>
+
+    <!-- 25. Step 4: + Release (FULL composite — logos go here when provided) -->
+    <section class="slide flex-col justify-center items-center ascii-diagram">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto text-center">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">The loop — complete</div>
+        <h2 class="text-4xl font-extrabold text-secondary-100 mb-6">The full development loop</h2>
+        <!-- TODO: replace these text rows with logos once provided -->
+        <div class="flex justify-between text-base font-semibold mb-5 px-4">
+          <span class="text-cobalt">Google Stitch · Claude Design · Lovable</span>
+          <span class="text-cobalt">CodeRabbit · Greptile · Copilot · Jules</span>
+        </div>
+<pre class="language-text"><code class="language-text">┌──────────┐  ┌────────────────┐  ┌──────────┐  ┌───────────┐
+│  DESIGN  │─▶│  PLAN  & CODE  │─▶│  REVIEW  │─▶│  RELEASE  │
+└──────────┘  └────────────────┘  └──────────┘  └───────────┘
+                      ▲                  │
+                      └──────────────────┘</code></pre>
+        <div class="flex justify-between text-base font-semibold mt-5 px-4">
+          <span class="text-secondary-100 ml-32">Claude Code · Cursor · Antigravity</span>
+          <span class="text-neutral-60 italic">[ release tools — TBD ]</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 26. Section divider — Part 4 -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="stagger max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">Part 4</div>
+        <h1 class="mt-6 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          Your AI Harness
+        </h1>
+        <p class="mt-8 text-2xl text-neutral-80 font-light">Wrap the loop</p>
+      </div>
+    </section>
+
+    <!-- 27. Wrap the loop -->
+    <section class="slide flex-col justify-center items-center ascii-diagram">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto text-center">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">The harness</div>
+        <h2 class="text-4xl font-extrabold text-secondary-100 mb-10">Everything inside one box</h2>
+<pre class="language-text"><code class="language-text">┌──────────────────────────── AI HARNESS ────────────────────────────┐
+│                                                                    │
+│   ┌──────────┐  ┌────────────────┐  ┌──────────┐  ┌───────────┐   │
+│   │  DESIGN  │─▶│  PLAN  & CODE  │─▶│  REVIEW  │─▶│  RELEASE  │   │
+│   └──────────┘  └────────────────┘  └──────────┘  └───────────┘   │
+│                         ▲                  │                       │
+│                         └──────────────────┘                       │
+│                                                                    │
+└────────────────────────────────────────────────────────────────────┘</code></pre>
+      </div>
+    </section>
+
+    <!-- 28. What this frees you to do -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">What changes for you</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">Spend cycles where they compound</h2>
+        <ul class="stagger space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">Plan the outcome</span> — not the keystrokes</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">Parallel development</span> — multiple tracks, one operator</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">Product ideation</span> — more time on what to build</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Code can be improved later — by other AIs</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 29. Closing takeaway -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="stagger max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">One thing to take away</div>
+        <h1 class="mt-8 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          You're coding less.
+        </h1>
+        <p class="mt-8 text-4xl text-neutral-120 font-light">You're orchestrating more.</p>
+      </div>
+    </section>
+
+    <!-- 30. Q&A / contact -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="stagger max-w-4xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">Thank you</div>
+        <h1 class="mt-6 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          Questions?
+        </h1>
+        <p class="mt-10 text-2xl text-neutral-80">malvarez@telescoped.com</p>
+        <div class="mt-8 flex items-center justify-center gap-3 text-neutral-60">
+          <span class="w-2 h-2 rounded-full bg-cobalt animate-pulse-dot"></span>
+          <span class="text-base">Mariano Alvarez · Telescoped · Google Developer Expert</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+  <div class="chrome">
+    <span id="counter">1 / 30</span>
+    <span class="ml-3 text-neutral-40">←/→ · space · f</span>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const counter = document.getElementById('counter');
+      const progress = document.getElementById('progress');
+      let i = 0;
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+        counter.textContent = (i + 1) + ' / ' + slides.length;
+        progress.style.width = ((i + 1) / slides.length * 100) + '%';
+        if (window.Prism) Prism.highlightAll();
+      }
+      function next() { if (i < slides.length - 1) { i++; render(); } }
+      function prev() { if (i > 0) { i--; render(); } }
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      }
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); next(); }
+        else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+        else if (e.key === 'Home') { i = 0; render(); }
+        else if (e.key === 'End') { i = slides.length - 1; render(); }
+        else if (e.key === 'f' || e.key === 'F') { toggleFullscreen(); }
+      });
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('a, button, pre, code')) return;
+        next();
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>

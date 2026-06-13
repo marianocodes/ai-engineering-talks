@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Desarrollo con IA en un Hackathon — Mariano Alvarez</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Nunito', 'sans-serif'],
+          mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        },
+        colors: {
+          border: 'hsl(var(--border))', input: 'hsl(var(--input))', ring: 'hsl(var(--ring))',
+          background: 'hsl(var(--background))', foreground: 'hsl(var(--foreground))',
+          primary: { DEFAULT: 'hsl(var(--primary))', foreground: 'hsl(var(--primary-foreground))' },
+          secondary: {
+            DEFAULT: 'hsl(var(--secondary))', foreground: 'hsl(var(--secondary-foreground))',
+            20: '#3D3855', 40: '#574E7C', 60: '#7264A2', 80: '#8C7AC9', 100: '#A78FEF', 120: '#B7A3F5',
+          },
+          tertiary: { 20: '#384555', 40: '#4E687C', 60: '#648BA2', 80: '#7AAEC9', 100: '#8FD1EF', 120: '#A3DBF5' },
+          neutral: {
+            '05': '#2B2B38', 10: '#343441', 20: '#474753', 40: '#6C6C77',
+            60: '#90909A', 80: '#B5B5BE', 100: '#DADAE2', 120: '#E3E3E8',
+          },
+          gray: { black: '#18171C', dark: '#201D2F', light: '#2B2B3B', accent: '#363649', background: '#22222F' },
+          destructive: { DEFAULT: 'hsl(var(--destructive))', foreground: 'hsl(var(--destructive-foreground))' },
+          muted: { DEFAULT: 'hsl(var(--muted))', foreground: 'hsl(var(--muted-foreground))' },
+          accent: { DEFAULT: 'hsl(var(--accent))', foreground: 'hsl(var(--accent-foreground))' },
+          card: { DEFAULT: 'hsl(var(--card))', foreground: 'hsl(var(--card-foreground))' },
+          danger: '#FF8387', success: '#8FEFC0', alert: '#FFE373',
+          cobalt: '#6BD4FF', infoBlue: '#8FAAEF', magenta: '#FF0066', purple: '#A940DD',
+        },
+        backgroundImage: {
+          'telescoped-1': 'linear-gradient(61deg, rgba(255,82,151,1) 0%, rgba(118,133,229,1) 50%, rgba(51,190,255,1) 100%)',
+        },
+        boxShadow: {
+          'shadow-12': '0px 12px 12px rgba(0, 0, 0, 0.12), 0px 12px 12px 12px rgba(0, 0, 0, 0.12)',
+        },
+        keyframes: {
+          'pulse-dot': { '0%, 100%': { opacity: '0.4' }, '50%': { opacity: '1' } },
+        },
+        animation: {
+          'pulse-dot': 'pulse-dot 1.4s ease-in-out infinite',
+        },
+      },
+    },
+  };
+</script>
+<style>
+  :root {
+    --background: 250 8% 10%; --foreground: 240 16% 90%;
+    --card: 250 22% 15%; --card-foreground: 240 16% 90%;
+    --primary: 258 75% 75%; --primary-foreground: 250 22% 12%;
+    --secondary: 258 65% 65%; --secondary-foreground: 240 16% 95%;
+    --muted: 240 8% 25%; --muted-foreground: 240 8% 70%;
+    --accent: 198 100% 71%; --accent-foreground: 250 22% 12%;
+    --destructive: 358 100% 76%; --destructive-foreground: 250 22% 12%;
+    --border: 240 8% 25%; --input: 240 8% 25%; --ring: 258 75% 75%;
+    --radius: 12px;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+  html, body { height: 100%; margin: 0; }
+  body { background: #18171C; color: #E3E3E8; font-family: 'Nunito', sans-serif; overflow: hidden; }
+  #deck { position: relative; height: 100vh; width: 100vw; }
+  .slide {
+    position: absolute; inset: 0; display: none;
+    padding: 4rem 6rem; box-sizing: border-box; overflow: hidden;
+  }
+  .slide.active { display: flex; flex-direction: column; }
+  .slide pre[class*='language-'] {
+    background: #18171C !important;
+    border: 1px solid #474753;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 1rem;
+    line-height: 1.5;
+    box-shadow: 0px 12px 12px rgba(0,0,0,0.12), 0px 12px 12px 12px rgba(0,0,0,0.12);
+  }
+  .slide code[class*='language-'] { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .progress {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: linear-gradient(61deg, rgba(255,82,151,1) 0%, rgba(118,133,229,1) 50%, rgba(51,190,255,1) 100%);
+    transition: width 0.3s ease; z-index: 50;
+  }
+  .chrome {
+    position: fixed; bottom: 1.25rem; right: 1.5rem;
+    font-size: 0.85rem; color: #90909A;
+    font-variant-numeric: tabular-nums; letter-spacing: 0.04em; z-index: 50;
+  }
+  .brand-bar {
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(61deg, rgba(255,82,151,1) 0%, rgba(118,133,229,1) 50%, rgba(51,190,255,1) 100%);
+    opacity: 0.5;
+  }
+  .ascii-diagram pre[class*='language-'] {
+    font-size: 1.05rem;
+    line-height: 1.45;
+    text-align: left;
+    width: fit-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .ascii-diagram pre[class*='language-'] code { color: #DADAE2; }
+  .code-compare pre[class*='language-'] {
+    font-size: 0.78rem;
+    line-height: 1.45;
+    padding: 1rem 1.15rem;
+  }
+  .plink {
+    text-decoration: underline;
+    text-decoration-color: rgba(107, 212, 255, 0.5);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    transition: color 0.15s ease;
+  }
+  .plink:hover { color: #6BD4FF; }
+</style>
+</head>
+<body class="bg-gray-black text-neutral-120 font-sans">
+  <div class="progress" id="progress" style="width: 0%"></div>
+  <main id="deck">
+
+    <!-- 1. Title — kept in English -->
+    <section class="slide active items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">A talk on</div>
+        <h1 class="mt-6 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          AI Development in a Hackathon
+        </h1>
+        <p class="mt-8 text-2xl text-neutral-80 font-light">Five moves to ship a real product before Friday's demo</p>
+        <div class="mt-14 flex items-center justify-center gap-3 text-neutral-60">
+          <span class="w-2 h-2 rounded-full bg-cobalt animate-pulse-dot"></span>
+          <span class="text-base">Mariano Alvarez · Telescoped · Google Developer Expert</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Sobre mí -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">Sobre mí</div>
+        <h1 class="mt-6 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          Mariano Alvarez
+        </h1>
+        <p class="mt-8 text-2xl text-neutral-120 font-light">Sr. Full Stack Engineer @ Telescoped</p>
+        <p class="mt-2 text-xl text-secondary-100 font-semibold">Google Developer Expert</p>
+        <p class="mt-10 text-lg text-neutral-80 italic max-w-3xl mx-auto">
+          Trabajo con IA todos los días — estos son los patrones que se quedaron.
+        </p>
+      </div>
+    </section>
+
+    <!-- 3. La tesis -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">La tesis</div>
+        <h1 class="mt-8 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          El código no importa.
+        </h1>
+        <p class="mt-8 text-4xl text-neutral-120 font-light">El producto importa.</p>
+        <p class="mt-12 text-lg text-neutral-60 italic">Todo en esta charla se desprende de esta única línea.</p>
+      </div>
+    </section>
+
+    <!-- 4. Section divider — Paso 1 -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">Paso 1</div>
+        <h1 class="mt-6 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          <span class="underline decoration-cobalt decoration-4 underline-offset-8">Decide</span> antes de programar
+        </h1>
+        <p class="mt-8 text-2xl text-neutral-80 font-light">Si no puedes describirlo en 200 palabras, no puedes entregarlo en 10 horas</p>
+      </div>
+    </section>
+
+    <!-- 5. No abras el editor primero -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Paso 1 / Decide</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">No abras el editor primero</h2>
+        <ul class="space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Primer movimiento del hackathon: una <span class="text-secondary-100 font-semibold">ventana de chat</span>, no <span class="font-mono text-base bg-gray-dark px-2 py-0.5 rounded">npm create</span></span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Usa ChatGPT / Gemini / Claude para redactar tu <span class="text-secondary-100 font-semibold">PRD</span></span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>PRD = alcance + no-alcance + criterios de éxito. Acota el alcance.</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Si no puedes describirlo en <span class="text-secondary-100 font-semibold">200 palabras</span>, no puedes entregarlo en 10 horas</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 6. PRD prompt + resultado -->
+    <section class="slide flex-col justify-center code-compare">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Ejemplo · DeliverFirst</div>
+        <h2 class="text-4xl font-extrabold text-secondary-100 mb-6">El prompt → el PRD</h2>
+        <div class="grid grid-cols-2 gap-6">
+          <div>
+            <div class="text-cobalt font-bold uppercase tracking-wider mb-2 text-xs">Prompt</div>
+<pre class="language-text"><code class="language-text">I'm building a hackathon project: an app that
+helps small-business delivery operators decide
+the ORDER of their stops for the day.
+
+Audience: couriers, mobile car detailers,
+traveling fruit/vegetable sellers — anyone with
+5–20 stops in a day.
+
+Key insight: navigation already exists (Maps
+does that). The hard part is SEQUENCING — which
+client gets visited first?
+
+Write me a 1-page PRD: problem, personas, MVP,
+non-features, demo success criteria.</code></pre>
+          </div>
+          <div>
+            <div class="text-secondary-100 font-bold uppercase tracking-wider mb-2 text-xs">Resultado (recortado)</div>
+<pre class="language-text"><code class="language-text"># DeliverFirst
+
+Problem  Small-business delivery operators lose
+         hours deciding which stop to do next.
+         Maps tells them how to get there; nothing
+         tells them which to do first.
+
+Personas Courier · mobile car detailer ·
+         traveling produce seller
+
+MVP      1. Add stops (address, priority, window)
+         2. Smart-order the stops
+         3. Mark done / drag-reorder
+         4. Day-end summary
+
+Not MVP  Turn-by-turn nav · multi-day ·
+         multi-courier · payments
+
+Demo     10 stops in &lt;2 min · AI order beats
+         naive · one persona walks the morning</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Section divider — Paso 2 -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">Paso 2</div>
+        <h1 class="mt-6 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          <span class="underline decoration-cobalt decoration-4 underline-offset-8">Diseña</span> antes de programar
+        </h1>
+        <p class="mt-8 text-2xl text-neutral-80 font-light">Una imagen ayuda a aclarar el panorama</p>
+      </div>
+    </section>
+
+    <!-- 8. Elige tu herramienta de diseño -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Paso 2 / Diseño</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">Elige tu herramienta de diseño</h2>
+        <ul class="space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">UI generativa:</span> <a href="https://stitch.withgoogle.com" target="_blank" rel="noopener" class="plink">Google Stitch</a> (gratis), <a href="https://claude.ai/design/" target="_blank" rel="noopener" class="plink">Claude Design</a>, <a href="https://chatgpt.com" target="_blank" rel="noopener" class="plink">ChatGPT</a>, <a href="https://gemini.google.com" target="_blank" rel="noopener" class="plink">Gemini</a>, <a href="https://lovable.dev" target="_blank" rel="noopener" class="plink">Lovable</a>, <a href="https://v0.dev" target="_blank" rel="noopener" class="plink">v0</a></span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">Solo diseño:</span> exporta el HTML y luego implementa sobre eso</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Una imagen ayuda a aclarar el panorama</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 9. Section divider — Paso 3 -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">Paso 3</div>
+        <h1 class="mt-6 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          Divide el trabajo
+        </h1>
+        <p class="mt-8 text-2xl text-neutral-80 font-light">Maximiza el paralelismo. Minimiza la espera.</p>
+      </div>
+    </section>
+
+    <!-- 10. Roles, escritos por el LLM -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Paso 3 / División</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">Roles, escritos por el LLM</h2>
+        <ul class="space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Pega el PRD <span class="text-secondary-100 font-semibold">y</span> el diseño de vuelta, pide roles para un equipo de N</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Optimiza para <span class="text-secondary-100 font-semibold">paralelismo</span> — slices full-stack, no capas</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Objetivo: nadie espera a nadie</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 11. Roles prompt + resultado -->
+    <section class="slide flex-col justify-center code-compare">
+      <div class="brand-bar"></div>
+      <div class="max-w-7xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Ejemplo · DeliverFirst</div>
+        <h2 class="text-4xl font-extrabold text-secondary-100 mb-6">División para un equipo de 3</h2>
+        <div class="grid grid-cols-2 gap-6">
+          <div>
+            <div class="text-cobalt font-bold uppercase tracking-wider mb-2 text-xs">Prompt</div>
+<pre class="language-text"><code class="language-text">Here's the PRD [paste above]. Team of 3 at
+the hackathon.
+
+Split into roles that:
+- Maximize parallel work (full-stack slices,
+  not layers)
+- Have minimal handoffs
+- Each ship something visible early</code></pre>
+          </div>
+          <div>
+            <div class="text-secondary-100 font-bold uppercase tracking-wider mb-2 text-xs">Resultado (recortado)</div>
+<pre class="language-text"><code class="language-text">Role 1 — Stop entry &amp; list
+  Form + list screen
+  Owns: &lt;Form/&gt;, &lt;StopList/&gt;, /api/stops
+
+Role 2 — Smart ordering engine
+  LLM prompt + ranking
+  Owns: /api/order, lib/order/, eval harness
+
+Role 3 — Day flow + demo polish
+  Today's plan + done flow + Vercel deploy
+  Owns: /today, /summary, /demo, vercel.json</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. Section divider — Paso 4 -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">Paso 4</div>
+        <h1 class="mt-6 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          Programa con IA
+        </h1>
+        <p class="mt-8 text-2xl text-neutral-80 font-light">Donde vive la mayor parte del oficio</p>
+      </div>
+    </section>
+
+    <!-- 13. Elige tu herramienta de código -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Paso 4 / Código</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">Elige tu herramienta de código</h2>
+        <ul class="space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><a href="https://claude.com/claude-code" target="_blank" rel="noopener" class="plink">Claude Code</a> · <a href="https://chatgpt.com/codex" target="_blank" rel="noopener" class="plink">Codex</a> · <a href="https://cursor.com" target="_blank" rel="noopener" class="plink">Cursor</a> · <a href="https://antigravity.google" target="_blank" rel="noopener" class="plink">Antigravity</a> · <a href="https://github.com/google-gemini/gemini-cli" target="_blank" rel="noopener" class="plink">Gemini CLI</a></span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Difieren menos de lo que crees</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Elige lo que tus <span class="text-secondary-100 font-semibold">dedos ya conocen</span></span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 14. Planificación > Ejecución -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">La regla principal</div>
+        <h1 class="mt-8 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          Planificación &gt; Ejecución
+        </h1>
+        <p class="mt-10 text-2xl text-neutral-80 font-light">Dedica tiempo al plan. La ejecución es la parte fácil.</p>
+      </div>
+    </section>
+
+    <!-- 15. Cómo planificar bien -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Planificación</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">Cómo planificar bien</h2>
+        <ul class="space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">LLMs inteligentes para planificar</span>, LLMs rápidos para ejecutar</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Haz que el agente produzca un <span class="text-secondary-100 font-semibold">plan escrito</span> antes de cualquier código</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>No te saltes el plan para "ahorrar tiempo" — te cuesta <span class="text-secondary-100 font-semibold">3× después</span></span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 16. One-shot del scaffold -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Ejecución</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">Genera el scaffold en un one-shot</h2>
+        <ul class="space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Alimenta al agente con <span class="text-secondary-100 font-semibold">PRD + diseño + roles</span> → pídele la app inicial completa en un one-shot</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>No apuntas a producción. Apuntas a <span class="text-secondary-100 font-semibold">código corriendo en 20 minutos</span>.</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Desde aquí, cada miembro del equipo empieza a iterar desde el mismo scaffold</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 17. Commit rápido -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Entrega en equipo</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">Commit rápido</h2>
+        <ul class="space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Commits pequeños, frecuentes, con nombre</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Push cada <span class="text-secondary-100 font-semibold">~15 minutos</span> en las primeras horas</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Los conflictos matan equipos — los commits pequeños mantienen la ventana de merge angosta</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 18. Worktrees -->
+    <section class="slide flex-col justify-center ascii-diagram">
+      <div class="brand-bar"></div>
+      <div class="max-w-6xl w-full mx-auto">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Entrega en equipo</div>
+        <h2 class="text-4xl font-extrabold text-secondary-100 mb-6">Worktrees — un repo, N checkouts en paralelo</h2>
+<pre class="language-bash"><code class="language-bash"># Claude Code — flag de worktree integrado
+$ claude --worktree role-1
+
+# Otras herramientas — git worktree + lanzar manualmente
+$ git worktree add ../role-2   role-2
+$ cd ../role-2 && codex          # Codex
+
+$ git worktree add ../role-3   role-3
+$ cd ../role-3 && cursor .       # Cursor
+
+
+DeliverFirst/                  ← main
+  ├── ../role-1                ← Rol 1 + Claude Code
+  ├── ../role-2                ← Rol 2 + Codex
+  └── ../role-3                ← Rol 3 + Cursor</code></pre>
+      </div>
+    </section>
+
+    <!-- 19. Permisos — modo auto -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Entrega en equipo</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">Permisos — modo auto</h2>
+        <ul class="space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Configura el agente en <span class="text-secondary-100 font-semibold">modo auto (el más seguro)</span>: trabaja automáticamente, pero pausa pidiendo tu aprobación en cada cambio</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Tú eres el freno; el agente es el motor</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Atrapa los refactors malos y los comandos sorpresa <span class="text-secondary-100 font-semibold">antes</span> de que toquen tu árbol</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Más lento que full-auto, pero la pérdida es pequeña cuando el plan fue bueno</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 20. Sandboxes en la nube -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Entrega en equipo</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">Sandboxes en la nube — cuando estés listo para soltar</h2>
+        <ul class="space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Corre agentes en <span class="text-secondary-100 font-semibold">contenedores en la nube</span> (gestionados por Claude / Cursor / Codex)</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Radio de impacto acotado — deja que los agentes vayan en full-auto sin mirarlos</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Especialmente útil para las horas <span class="text-secondary-100 font-semibold">"mientras duermo"</span></span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 21. Skills — solo cuando los necesitas -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Entrega en equipo</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">Skills — solo cuando los necesitas</h2>
+        <ul class="space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">No desarrolles un Skill</span> a menos que sea estrictamente necesario</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Para prompts de una sola vez, solo promptea — los skills son overhead</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span>Ejemplo: una tarea <span class="text-secondary-100 font-semibold">repetida</span> Y <span class="text-secondary-100 font-semibold">enredada</span> — acceso a DB local, configs, scripts de deploy</span></li>
+        </ul>
+      </div>
+      <a href="https://www.skills.sh/" target="_blank" rel="noopener" class="absolute bottom-16 left-1/2 -translate-x-1/2 text-cobalt hover:text-secondary-100 text-lg font-mono">https://www.skills.sh/</a>
+    </section>
+
+    <!-- 22. Section divider — Paso 5 -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">Paso 5</div>
+        <h1 class="mt-6 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          Mantén el stack simple
+        </h1>
+        <p class="mt-8 text-2xl text-neutral-80 font-light">Si no se nota en la demo, no lo construyas</p>
+      </div>
+    </section>
+
+    <!-- 23. El stack para hackathon -->
+    <section class="slide flex-col justify-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.25em] text-xs font-semibold mb-3">Paso 5 / Stack</div>
+        <h2 class="text-5xl font-extrabold text-secondary-100 mb-10">El stack para hackathon</h2>
+        <ul class="space-y-5 text-2xl text-neutral-120 leading-snug">
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">Frontend:</span> <a href="https://nextjs.org" target="_blank" rel="noopener" class="plink">Next.js</a> + <a href="https://tailwindcss.com" target="_blank" rel="noopener" class="plink">Tailwind</a>, deploy en <a href="https://vercel.com" target="_blank" rel="noopener" class="plink">Vercel</a></span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">Agentes:</span> <a href="https://google.github.io/adk-docs/" target="_blank" rel="noopener" class="plink">ADK</a> + GCP Agent CLI</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span><span class="text-secondary-100 font-semibold">Almacenamiento:</span> <a href="https://supabase.com" target="_blank" rel="noopener" class="plink">Supabase</a> (DB) + <a href="https://www.datastax.com/products/datastax-astra" target="_blank" rel="noopener" class="plink">Astra</a> como VectorDB para búsqueda semántica</span></li>
+          <li class="flex gap-4"><span class="text-cobalt font-bold mt-1">▸</span><span class="italic text-neutral-80">Regla: si no se nota en la demo, no lo construyas</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 24. El mensaje -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-5xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">Una cosa para llevarte</div>
+        <h1 class="mt-8 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          El código no importa.
+        </h1>
+        <p class="mt-8 text-4xl text-neutral-120 font-light">El producto importa.</p>
+      </div>
+    </section>
+
+    <!-- 25. Gracias / Preguntas -->
+    <section class="slide items-center justify-center text-center">
+      <div class="brand-bar"></div>
+      <div class="max-w-4xl">
+        <div class="text-cobalt uppercase tracking-[0.3em] text-sm font-semibold">Gracias</div>
+        <h1 class="mt-6 text-7xl font-extrabold leading-tight bg-telescoped-1 bg-clip-text text-transparent">
+          ¿Preguntas?
+        </h1>
+        <p class="mt-10 text-2xl text-neutral-80">malvarez@telescoped.com</p>
+        <p class="mt-3 text-xl text-cobalt">
+          <span>@marianocodes</span>
+          <span class="text-neutral-60 mx-2">—</span>
+          <a href="https://x.com/marianocodes" target="_blank" rel="noopener" class="plink">Twitter</a>
+          <span class="text-neutral-60 mx-1">·</span>
+          <a href="https://linkedin.com/in/marianocodes" target="_blank" rel="noopener" class="plink">LinkedIn</a>
+        </p>
+        <div class="mt-8 flex items-center justify-center gap-3 text-neutral-60">
+          <span class="w-2 h-2 rounded-full bg-cobalt animate-pulse-dot"></span>
+          <span class="text-base">Mariano Alvarez · Telescoped · Google Developer Expert</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+  <div class="chrome">
+    <span id="counter">1 / 25</span>
+    <span class="ml-3 text-neutral-40">←/→ · space · f</span>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const counter = document.getElementById('counter');
+      const progress = document.getElementById('progress');
+      let i = 0;
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+        counter.textContent = (i + 1) + ' / ' + slides.length;
+        progress.style.width = ((i + 1) / slides.length * 100) + '%';
+        if (window.Prism) Prism.highlightAll();
+      }
+      function next() { if (i < slides.length - 1) { i++; render(); } }
+      function prev() { if (i > 0) { i--; render(); } }
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      }
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); next(); }
+        else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+        else if (e.key === 'Home') { i = 0; render(); }
+        else if (e.key === 'End') { i = slides.length - 1; render(); }
+        else if (e.key === 'f' || e.key === 'F') { toggleFullscreen(); }
+      });
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('a, button, pre, code')) return;
+        next();
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>

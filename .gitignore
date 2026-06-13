@@ -1,0 +1,10 @@
+# Large / source assets — kept out of the repo per request
+assets/
+Archive.zip
+
+# Local, machine-specific Claude Code config
+.claude/settings.local.json
+
+# OS / archive cruft
+.DS_Store
+__MACOSX/

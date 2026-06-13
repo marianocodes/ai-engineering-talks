@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>__DECK_TITLE__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Nunito', 'sans-serif'],
+          mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        },
+        colors: {
+          border: 'hsl(var(--border))',
+          input: 'hsl(var(--input))',
+          ring: 'hsl(var(--ring))',
+          background: 'hsl(var(--background))',
+          foreground: 'hsl(var(--foreground))',
+          primary: {
+            DEFAULT: 'hsl(var(--primary))',
+            foreground: 'hsl(var(--primary-foreground))',
+          },
+          secondary: {
+            DEFAULT: 'hsl(var(--secondary))',
+            foreground: 'hsl(var(--secondary-foreground))',
+            20: '#3D3855',
+            40: '#574E7C',
+            60: '#7264A2',
+            80: '#8C7AC9',
+            100: '#A78FEF',
+            120: '#B7A3F5',
+          },
+          tertiary: {
+            20: '#384555',
+            40: '#4E687C',
+            60: '#648BA2',
+            80: '#7AAEC9',
+            100: '#8FD1EF',
+            120: '#A3DBF5',
+          },
+          neutral: {
+            '05': '#2B2B38',
+            10: '#343441',
+            20: '#474753',
+            40: '#6C6C77',
+            60: '#90909A',
+            80: '#B5B5BE',
+            100: '#DADAE2',
+            120: '#E3E3E8',
+          },
+          gray: {
+            black: '#18171C',
+            dark: '#201D2F',
+            light: '#2B2B3B',
+            accent: '#363649',
+            background: '#22222F',
+          },
+          destructive: {
+            DEFAULT: 'hsl(var(--destructive))',
+            foreground: 'hsl(var(--destructive-foreground))',
+          },
+          muted: {
+            DEFAULT: 'hsl(var(--muted))',
+            foreground: 'hsl(var(--muted-foreground))',
+          },
+          accent: {
+            DEFAULT: 'hsl(var(--accent))',
+            foreground: 'hsl(var(--accent-foreground))',
+          },
+          popover: {
+            DEFAULT: 'hsl(var(--popover))',
+            foreground: 'hsl(var(--popover-foreground))',
+          },
+          card: {
+            DEFAULT: 'hsl(var(--card))',
+            foreground: 'hsl(var(--card-foreground))',
+          },
+          danger: '#FF8387',
+          success: '#8FEFC0',
+          alert: '#FFE373',
+          reviewYellow: '#EFDC8F',
+          cobalt: '#6BD4FF',
+          infoBlue: '#8FAAEF',
+          magenta: '#FF0066',
+          purple: '#A940DD',
+          terminal: {
+            green: '#00ff00',
+            'green-dim': '#00cc00',
+            purple: '#a940dd',
+            'purple-light': '#c251fb',
+          },
+        },
+        backgroundImage: {
+          'primary-10': 'linear-gradient(87.69deg, #2A263F 0%, #2F263F 100%)',
+          'primary-20': 'linear-gradient(45deg, #3D3A55 0%, #3D3D55 100%)',
+          'primary-40': 'linear-gradient(45deg, #534E78 0%, #4E4E78 100%)',
+          'primary-60': 'linear-gradient(45deg, #71669F 0%, #71669F 100%)',
+          'primary-80': 'linear-gradient(45deg, #8B78C8 0%, #8B8BC8 100%)',
+          'primary-100': 'linear-gradient(45deg, #A78FEF 0%, #8F8FEF 100%)',
+          'primary-120': 'linear-gradient(45deg, #C2B0F8 0%, #B0B0F8 100%)',
+          'telescoped-1': 'linear-gradient(61deg, rgba(255,82,151,1) 0%, rgba(118,133,229,1) 50%, rgba(51,190,255,1) 100%)',
+          'cobalt-1': 'linear-gradient(61deg, rgba(159,235,255,1) 0%, rgba(64,193,255,1) 65%)',
+          'success-1': 'linear-gradient(61deg, rgba(143,239,192,1) 0%, rgba(71,179,150,1) 65%)',
+          'danger-1': 'linear-gradient(61deg, rgba(255,131,135,1) 0%, rgba(179,91,94,1) 65%)',
+        },
+        boxShadow: {
+          'shadow-02': '0px 2px 2px rgba(0, 0, 0, 0.04), 0px 2px 2px 0px rgba(0, 0, 0, 0.04)',
+          'shadow-04': '0px 4px 4px rgba(0, 0, 0, 0.04), 0px 4px 4px 4px rgba(0, 0, 0, 0.04)',
+          'shadow-08': '0px 8px 8px rgba(0, 0, 0, 0.08), 0px 8px 8px 8px rgba(0, 0, 0, 0.08)',
+          'shadow-12': '0px 12px 12px rgba(0, 0, 0, 0.12), 0px 12px 12px 12px rgba(0, 0, 0, 0.12)',
+          'shadow-16': '0px 16px 16px rgba(0, 0, 0, 0.16), 0px 16px 16px 16px rgba(0, 0, 0, 0.16)',
+          'shadow-24': '0px 24px 24px rgba(0, 0, 0, 0.24), 0px 24px 24px 24px rgba(0, 0, 0, 0.24)',
+        },
+        borderRadius: {
+          lg: 'var(--radius)',
+          md: 'calc(var(--radius) - 2px)',
+          sm: 'calc(var(--radius) - 4px)',
+        },
+        keyframes: {
+          'fade-in': {
+            '0%': { opacity: '0', transform: 'translateY(10px)' },
+            '100%': { opacity: '1', transform: 'translateY(0)' },
+          },
+          'slide-up': {
+            '0%': { opacity: '0', transform: 'translateY(20px)' },
+            '100%': { opacity: '1', transform: 'translateY(0)' },
+          },
+          'pulse-dot': {
+            '0%, 100%': { opacity: '0.4' },
+            '50%': { opacity: '1' },
+          },
+          'border-travel': {
+            '0%': { backgroundPosition: '0% 50%' },
+            '100%': { backgroundPosition: '200% 50%' },
+          },
+        },
+        animation: {
+          'fade-in': 'fade-in 0.4s ease-out forwards',
+          'slide-up': 'slide-up 0.3s ease-out forwards',
+          'pulse-dot': 'pulse-dot 1.4s ease-in-out infinite',
+          'border-travel': 'border-travel 1.5s linear forwards',
+        },
+      },
+    },
+  };
+</script>
+<style>
+  :root {
+    --background: 250 8% 10%;
+    --foreground: 240 16% 90%;
+    --card: 250 22% 15%;
+    --card-foreground: 240 16% 90%;
+    --popover: 250 22% 15%;
+    --popover-foreground: 240 16% 90%;
+    --primary: 258 75% 75%;
+    --primary-foreground: 250 22% 12%;
+    --secondary: 258 65% 65%;
+    --secondary-foreground: 240 16% 95%;
+    --muted: 240 8% 25%;
+    --muted-foreground: 240 8% 70%;
+    --accent: 198 100% 71%;
+    --accent-foreground: 250 22% 12%;
+    --destructive: 358 100% 76%;
+    --destructive-foreground: 250 22% 12%;
+    --border: 240 8% 25%;
+    --input: 240 8% 25%;
+    --ring: 258 75% 75%;
+    --radius: 12px;
+  }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: #18171C;
+    color: #E3E3E8;
+    font-family: 'Nunito', sans-serif;
+    overflow: hidden;
+  }
+  #deck { position: relative; height: 100vh; width: 100vw; }
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    padding: 4rem 6rem;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  .slide.active { display: flex; flex-direction: column; animation: fade-in 0.4s ease-out forwards; }
+  .slide pre[class*='language-'] {
+    background: #18171C !important;
+    border: 1px solid #474753;
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    box-shadow: 0px 12px 12px rgba(0,0,0,0.12), 0px 12px 12px 12px rgba(0,0,0,0.12);
+  }
+  .slide code[class*='language-'] { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(61deg, rgba(255,82,151,1) 0%, rgba(118,133,229,1) 50%, rgba(51,190,255,1) 100%);
+    transition: width 0.3s ease;
+    z-index: 50;
+  }
+  .chrome {
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1.5rem;
+    font-size: 0.85rem;
+    color: #90909A;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    z-index: 50;
+  }
+  .brand-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(61deg, rgba(255,82,151,1) 0%, rgba(118,133,229,1) 50%, rgba(51,190,255,1) 100%);
+    opacity: 0.5;
+  }
+  .stagger > * { opacity: 0; animation: slide-up 0.35s ease-out forwards; }
+  .stagger > *:nth-child(1) { animation-delay: 0.05s; }
+  .stagger > *:nth-child(2) { animation-delay: 0.15s; }
+  .stagger > *:nth-child(3) { animation-delay: 0.25s; }
+  .stagger > *:nth-child(4) { animation-delay: 0.35s; }
+  .stagger > *:nth-child(5) { animation-delay: 0.45s; }
+  .stagger > *:nth-child(6) { animation-delay: 0.55s; }
+  .stagger > *:nth-child(7) { animation-delay: 0.65s; }
+  .stagger > *:nth-child(8) { animation-delay: 0.75s; }
+</style>
+</head>
+<body class="bg-gray-black text-neutral-120 font-sans">
+  <div class="progress" id="progress" style="width: 0%"></div>
+  <main id="deck">
+    <!-- SLIDES_PLACEHOLDER -->
+  </main>
+  <div class="chrome">
+    <span id="counter">1 / 1</span>
+    <span class="ml-3 text-neutral-40">←/→ · space · f</span>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const counter = document.getElementById('counter');
+      const progress = document.getElementById('progress');
+      let i = 0;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+        counter.textContent = (i + 1) + ' / ' + slides.length;
+        progress.style.width = ((i + 1) / slides.length * 100) + '%';
+        if (window.Prism) Prism.highlightAll();
+      }
+      function next() { if (i < slides.length - 1) { i++; render(); } }
+      function prev() { if (i > 0) { i--; render(); } }
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); next(); }
+        else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+        else if (e.key === 'Home') { i = 0; render(); }
+        else if (e.key === 'End') { i = slides.length - 1; render(); }
+        else if (e.key === 'f' || e.key === 'F') { toggleFullscreen(); }
+      });
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('a, button, pre, code')) return;
+        next();
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>
